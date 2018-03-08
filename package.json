@@ -1,0 +1,25 @@
+{
+  "name": "trunk-2018-osaka",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }, 
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YoshikawaTaiki/trunk-2018-osaka.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/YoshikawaTaiki/trunk-2018-osaka/issues"
+  },
+  "homepage": "https://github.com/YoshikawaTaiki/trunk-2018-osaka#readme",
+  "dependencies": {
+    "@line/bot-sdk": "^6.0.0",
+    "express": "^4.16.2"
+  }
+}
