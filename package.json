@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
-  }, 
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/YoshikawaTaiki/trunk-2018-osaka.git"
