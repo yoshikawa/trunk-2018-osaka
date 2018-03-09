@@ -2,8 +2,8 @@ trunk-2018-osaka
 ---
 trunk-2018-osaka
 
-*マナーを守って使ってね！*
-![QRcode](https://github.com/YoshikawaTaiki/trunk-2018-osaka/qr.png)
+*マナーを守って使ってね！*   
+![QRcode](https://github.com/YoshikawaTaiki/trunk-2018-osaka/blob/master/qr.png)
 
 #### 使用言語
 - Python2
