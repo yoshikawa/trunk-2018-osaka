@@ -26,7 +26,9 @@ import ffmpeg
 import argparse
 import io
 
-app = Flask(__name__, static_folder='tmp')
+from google.cloud import storage
+
+app = Flask(__name__, static_folder='namari')
 port = int(3000)
 
 
@@ -36,7 +38,7 @@ CHANNEL_ACCESS_TOKEN = 'SyR0KJcIbZivQpl0XvPTtsnC+P+XSYP/1dQH2AywHbbAg2pTeApw8KEM
 
 line_bot_api = LineBotApi(CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(CHANNEL_SECRET)
-
+      
 @app.route("/", methods=['POST'])
 def callback():
     signature = request.headers['X-Line-Signature']
@@ -135,19 +137,23 @@ def handle_content_message(event):
     f.close()
 
     #------------------------
+    storage_client = storage.Client()
+
+
     audio_Kansai = AudioSegment.from_file(dataPath, format='m4a')
     duration = int(audio_Kansai.duration_seconds * 1000)
 
     print(type(dataPath))
     print(duration,(type(duration)))
 
+    audioURL = 'https://d9489ca9.ngrok.io/' + dataPath 
+
     response = line_bot_api.reply_message(
         event.reply_token, [
             TextSendMessage(text=text),
-            AudioSendMessage(original_content_url=dataPath, duration=duration)
+            AudioSendMessage(original_content_url=audioURL, duration=duration)
         ]
     )
-    print(response.details)
 
 def transcribe_file(speech_file):
     """Transcribe the given audio file."""
