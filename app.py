@@ -8,6 +8,13 @@ import json
 from PIL import Image
 import io
 import requests
+import ffmpeg
+import argparse
+import random
+import io
+
+from pydub import AudioSegment
+from google.cloud import storage
 from flask import Flask, request, abort, send_file
 
 from linebot import (
@@ -19,14 +26,6 @@ from linebot.exceptions import (
 from linebot.models import (
     MessageEvent, TextMessage, ImageMessage, VideoMessage, TextSendMessage, AudioMessage, StickerSendMessage, AudioSendMessage
 )
-
-from pydub import AudioSegment
-import ffmpeg
-
-import argparse
-import io
-
-from google.cloud import storage
 
 app = Flask(__name__, static_folder='namari')
 port = int(3000)
@@ -102,6 +101,10 @@ def handle_content_message(event):
     for key,value in zip(keys,values):
         if key in s:
             s = s.replace(key, value)
+
+    if random.randint(0,6)%2 == 0:
+        s = s + u'、知らんけど！'
+
     print(s)
 
     text = s
@@ -113,8 +116,8 @@ def handle_content_message(event):
     #あかねちゃん
     speaker = 'akane_west'
 
-    speak_text = text
-    text = "<voice name=\"" + speaker + "\">" + speak_text + "</voice>"
+    #speak_text = text
+    #text = "<voice name=\"" + speaker + "\">" + speak_text + "</voice>"
 
     data = {
         "username": 'MA2017',
@@ -131,7 +134,6 @@ def handle_content_message(event):
         os.makedirs('namari')
 
     dataPath = 'namari/{}.m4a'.format(fileName)
-    print(dataPath)
     f = open(dataPath, 'wb')
     f.write(r.content)
     f.close()
@@ -142,9 +144,6 @@ def handle_content_message(event):
 
     audio_Kansai = AudioSegment.from_file(dataPath, format='m4a')
     duration = int(audio_Kansai.duration_seconds * 1000)
-
-    print(type(dataPath))
-    print(duration,(type(duration)))
 
     audioURL = 'https://d9489ca9.ngrok.io/' + dataPath 
 
