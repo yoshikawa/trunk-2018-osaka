@@ -8,13 +8,6 @@ import json
 from PIL import Image
 import io
 import requests
-import ffmpeg
-import argparse
-import random
-import io
-
-from pydub import AudioSegment
-from google.cloud import storage
 from flask import Flask, request, abort, send_file
 
 from linebot import (
@@ -27,6 +20,14 @@ from linebot.models import (
     MessageEvent, TextMessage, ImageMessage, VideoMessage, TextSendMessage, AudioMessage, StickerSendMessage, AudioSendMessage
 )
 
+from pydub import AudioSegment
+import ffmpeg
+
+import argparse
+import io
+
+from google.cloud import storage
+
 app = Flask(__name__, static_folder='namari')
 port = int(3000)
 
@@ -37,7 +38,7 @@ CHANNEL_ACCESS_TOKEN = 'SyR0KJcIbZivQpl0XvPTtsnC+P+XSYP/1dQH2AywHbbAg2pTeApw8KEM
 
 line_bot_api = LineBotApi(CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(CHANNEL_SECRET)
-      
+
 @app.route("/", methods=['POST'])
 def callback():
     signature = request.headers['X-Line-Signature']
@@ -52,7 +53,87 @@ def callback():
 
     return 'OK'
 
+@handler.add(MessageEvent, message=TextMessage)
+def handle_message(event):
+    text = event.message.text
 
+    print('event.message.text =', event.message.text)
+
+    #------------------------
+    #textReplace!
+    with open("geek.json", 'r') as outfile:
+        data = json.load(outfile)
+
+    s = text
+
+    keys = data.keys()
+    values = data.values()
+
+    for key,value in zip(keys,values):
+        if key in s:
+            s = s.replace(key, value)
+
+    with open("gobi.json", 'r') as outfile:
+        data = json.load(outfile)
+
+    keys = data.keys()
+    values = data.values()
+
+    for key,value in zip(keys,values):
+        if key in s:
+            s = s.replace(key, value)
+    print(s)
+
+    text = s
+
+    #------------------------
+
+    #------------------------
+    #voiceroid!
+    #あかねちゃん
+    speaker = 'akane_west'
+
+#    speak_text = text
+#    text = "<voice name=\"" + speaker + "\">" + speak_text + "</voice>"
+
+    data = {
+        "username": 'MA2017',
+        "password": 'MnYrnxhH',
+        "ext": 'aac',
+        "text": text,
+        "speaker_name": speaker,
+        "range": 1.8
+        }
+
+    r = requests.post('http://webapi.aitalk.jp/webapi/v2/ttsget.php', params=data)
+
+    if not os.path.exists('namari'):
+        os.makedirs('namari')
+
+    dataPath = 'namari/{}.m4a'.format('message')
+    print(dataPath)
+    f = open(dataPath, 'wb')
+    f.write(r.content)
+    f.close()
+
+    #------------------------
+    storage_client = storage.Client()
+
+
+    audio_Kansai = AudioSegment.from_file(dataPath, format='m4a')
+    duration = int(audio_Kansai.duration_seconds * 1000)
+
+    print(type(dataPath))
+    print(duration,(type(duration)))
+
+    audioURL = 'https://d9489ca9.ngrok.io/' + dataPath
+
+    response = line_bot_api.reply_message(
+        event.reply_token, [
+            TextSendMessage(text=text),
+            AudioSendMessage(original_content_url=audioURL, duration=duration)
+            ]
+    )
 
 @handler.add(MessageEvent, message=AudioMessage)
 def handle_content_message(event):
@@ -82,29 +163,25 @@ def handle_content_message(event):
     #textReplace!
     with open("geek.json", 'r') as outfile:
         data = json.load(outfile)
- 
+    baseText = text
     s = text
-    
+
     keys = data.keys()
     values = data.values()
 
     for key,value in zip(keys,values):
         if key in s:
             s = s.replace(key, value)
-                               
+
     with open("gobi.json", 'r') as outfile:
         data = json.load(outfile)
 
     keys = data.keys()
     values = data.values()
-    
+
     for key,value in zip(keys,values):
         if key in s:
             s = s.replace(key, value)
-
-    if random.randint(0,6)%2 == 0:
-        s = s + u'、知らんけど！'
-
     print(s)
 
     text = s
@@ -116,8 +193,8 @@ def handle_content_message(event):
     #あかねちゃん
     speaker = 'akane_west'
 
-    #speak_text = text
-    #text = "<voice name=\"" + speaker + "\">" + speak_text + "</voice>"
+#    speak_text = text
+#    text = "<voice name=\"" + speaker + "\">" + speak_text + "</voice>"
 
     data = {
         "username": 'MA2017',
@@ -134,6 +211,7 @@ def handle_content_message(event):
         os.makedirs('namari')
 
     dataPath = 'namari/{}.m4a'.format(fileName)
+    print(dataPath)
     f = open(dataPath, 'wb')
     f.write(r.content)
     f.close()
@@ -145,10 +223,14 @@ def handle_content_message(event):
     audio_Kansai = AudioSegment.from_file(dataPath, format='m4a')
     duration = int(audio_Kansai.duration_seconds * 1000)
 
-    audioURL = 'https://d9489ca9.ngrok.io/' + dataPath 
+    print(type(dataPath))
+    print(duration,(type(duration)))
+
+    audioURL = 'https://d9489ca9.ngrok.io/' + dataPath
 
     response = line_bot_api.reply_message(
         event.reply_token, [
+            TextSendMessage(text=baseText),
             TextSendMessage(text=text),
             AudioSendMessage(original_content_url=audioURL, duration=duration)
         ]
